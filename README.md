@@ -41,7 +41,7 @@ qdrant/qdrant`
 ```
 
 #### 删除文档库
-[POST] http://127.0.0.1:8000/insert
+[POST] http://127.0.0.1:8000/deleteDB
 
 ```json
 {
