@@ -50,6 +50,10 @@ func Query(config initialization.Config, Q string, useCache bool, dbName string)
 		return "", err
 	}
 
+	if len(res.Result) == 0 {
+		log.Println("[QuestionHandler] 未查询到匹配段落（db为空情况，请录入文档）")
+		return "未查询到匹配段落（db为空情况，请录入文档）", nil
+	}
 	if res.Result[0].Score <= 0.79 {
 		log.Println("[QuestionHandler] 相似度:\n", res.Result[0].Score)
 		log.Println("[QuestionHandler] 匹配段落:\n", res.Result[0].Payload.Text)
