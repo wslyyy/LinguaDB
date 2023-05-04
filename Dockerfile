@@ -1,5 +1,8 @@
 FROM golang:1.19 as golang
 
+ENV GO111MODULE=on \
+    GOPROXY=https://goproxy.cn,direct
+
 WORKDIR /build
 ADD . /build
 
