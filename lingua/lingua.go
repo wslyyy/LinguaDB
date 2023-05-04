@@ -10,13 +10,13 @@ import (
 	"log"
 )
 
-func Query(config initialization.Config, Q string, useCache bool, dbName string) (string, error) {
+func Query(config initialization.Config, Q string, useCache bool, dbName string) (string, string, error) {
 	qdrant := server.NewQdrant(config.QdrantAddrGrpc, config.QdrantAddrHttp, dbName, uint64(1536))
 	clientToUse := openai.NewClient(config.OpenaiApiKeys)
 
 	QEmbedding, err := server.GetEmbedding(clientToUse, Q, openai.AdaEmbeddingV2)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	qaStorage := storage.QAStorage{
@@ -32,7 +32,7 @@ func Query(config initialization.Config, Q string, useCache bool, dbName string)
 		// 查询QA缓存
 		cacheRep, err := qaStorage.GetQAStorage(config)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
 		// 命中QA缓存
@@ -40,24 +40,24 @@ func Query(config initialization.Config, Q string, useCache bool, dbName string)
 			qaStorage.A = cacheRep.Result[0].Payload.A
 			qaStorage.Title = cacheRep.Result[0].Payload.File_name
 			qaStorage.SubTitle = cacheRep.Result[0].Payload.Sub_title
-			return qaStorage.A, nil
+			return qaStorage.A, qaStorage.Title, nil
 		}
 	}
 	// 未命中QA缓存
 	res, err := qdrant.SearchHttp(qaStorage.QEmbedding)
 	if err != nil {
 		log.Println("[QuestionHandler ERR] SearchHttp error\n", err.Error())
-		return "", err
+		return "", "", err
 	}
 
 	if len(res.Result) == 0 {
 		log.Println("[QuestionHandler] 未查询到匹配段落（db为空情况，请录入文档）")
-		return "未查询到匹配段落（db为空情况，请录入文档）", nil
+		return "未查询到匹配段落（db为空情况，请录入文档）", "", nil
 	}
 	if res.Result[0].Score <= 0.79 {
 		log.Println("[QuestionHandler] 相似度:\n", res.Result[0].Score)
 		log.Println("[QuestionHandler] 匹配段落:\n", res.Result[0].Payload.Text)
-		return "不好意思呀，你的问题我回答不了", nil
+		return "不好意思呀，你的问题我回答不了", "", nil
 	}
 
 	qaStorage.Title = res.Result[0].Payload.File_name
@@ -72,7 +72,7 @@ func Query(config initialization.Config, Q string, useCache bool, dbName string)
 
 	if err != nil {
 		log.Println("[QuestionHandler ERR] BuildPrompt error\n", err.Error())
-		return "", err
+		return "", "", err
 	}
 
 	model := openai.GPT3Dot5Turbo
@@ -84,7 +84,7 @@ func Query(config initialization.Config, Q string, useCache bool, dbName string)
 
 	if err != nil {
 		log.Println("[QuestionHandler ERR] OpenAI answer questions request error\n", err.Error())
-		return "", err
+		return "", "", err
 	}
 
 	response := server.OpenAIResponse{Response: openAIResponse, Tokens: tokens}
@@ -102,7 +102,7 @@ func Query(config initialization.Config, Q string, useCache bool, dbName string)
 		qaStorage.SaveToQdrantStorage(config)
 	}
 
-	return response.Response, nil
+	return response.Response, qaStorage.Title, nil
 }
 
 func ShouldInsertCache(config initialization.Config, qaStorage storage.QAStorage) {

@@ -22,3 +22,4 @@ go.work
 
 ./data
 .idea
+./qdrant_storage
