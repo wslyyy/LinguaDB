@@ -12,7 +12,7 @@ import (
 
 func Query(config initialization.Config, Q string, useCache bool, dbName string) (string, string, error) {
 	qdrant := server.NewQdrant(config.QdrantAddrGrpc, config.QdrantAddrHttp, dbName, uint64(1536))
-	clientToUse := openai.NewClient(config.OpenaiApiKeys)
+	clientToUse := initialization.NewOpenAIClient(config)
 
 	QEmbedding, err := server.GetEmbedding(clientToUse, Q, openai.AdaEmbeddingV2)
 	if err != nil {
@@ -113,7 +113,7 @@ func ShouldInsertCache(config initialization.Config, qaStorage storage.QAStorage
 
 func LoadDOC(config initialization.Config, dbName string, dirName string) error {
 	qdrant := server.NewQdrant(config.QdrantAddrGrpc, config.QdrantAddrHttp, dbName, uint64(1536))
-	clientToUse := openai.NewClient(config.OpenaiApiKeys)
+	clientToUse := initialization.NewOpenAIClient(config)
 
 	chunks, err := server.CreateChunk(dirName)
 	if err != nil {
