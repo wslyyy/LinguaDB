@@ -28,6 +28,9 @@ qdrant/qdrant`
 `go mod tidy`  
 `go run main.go`
 
+### Or Use Docker Compose
+`docker-compose up -d`
+
 ### API
 
 #### 录入文档至文档库
