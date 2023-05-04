@@ -66,7 +66,7 @@ func QueryHandler(context *gin.Context) {
 	question := query.Question
 	useCache := query.UseCache
 	dbName := query.DbName
-	answer, err := lingua.Query(*config, question, useCache, dbName)
+	answer, filename, err := lingua.Query(*config, question, useCache, dbName)
 	if err != nil {
 		log.Printf("回答失败：%v", err.Error())
 		context.JSON(http.StatusInternalServerError, gin.H{
@@ -75,7 +75,8 @@ func QueryHandler(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{
-		"answer": answer,
+		"answer":   answer,
+		"filename": filename,
 	})
 }
 
