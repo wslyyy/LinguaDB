@@ -43,7 +43,13 @@ func CreateChunk(dirname string) ([]Chunk, error) {
 			return nil, err
 		}
 		// fmt.Println(string(data))
-		str := strings.Replace(string(data), " ", "", -1)
+		var str string
+		// 临时处理一下
+		if dirname == "公司开票信息" {
+			str = string(data)
+		} else {
+			str = strings.Replace(string(data), " ", "", -1)
+		}
 		// fmt.Println(str)
 		newData = append(newData, Chunk{
 			Title:    dirname,

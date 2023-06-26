@@ -348,6 +348,9 @@ func (q *Qdrant) Search() []*pb.ScoredPoint {
 		CollectionName: q.collectionName,
 		Vector:         utils.GenRandEmbedding(int(q.vectorSize)),
 		Limit:          3,
+		// Include all payload and vectors in the search result
+		WithVectors: &pb.WithVectorsSelector{SelectorOptions: &pb.WithVectorsSelector_Enable{Enable: true}},
+		WithPayload: &pb.WithPayloadSelector{SelectorOptions: &pb.WithPayloadSelector_Enable{Enable: true}},
 	})
 	if err != nil {
 		log.Printf("Could not search points: %v", err)
@@ -463,6 +466,53 @@ func (q *Qdrant) SearchQAQdrantHttp(vector []float32) (*model.QdrantQAResp, erro
 		log.Printf("Error response: %s\n", resp.Status)
 		return nil, errors.New(fmt.Sprintf("http error code %d", resp.StatusCode))
 	}
+}
+
+func (q *Qdrant) DeletePoints(dirname string) error {
+	qdEndpoint := fmt.Sprintf("http://%s/collections/%s/points/delete", q.addrHttp, q.collectionName)
+
+	var mustList []model.Must
+	mustList = append(mustList, model.Must{
+		Key:   "file_name",
+		Match: model.Match{
+			Value: dirname,
+		},
+	})
+
+	filter := model.MyFilter{
+		Filter: model.Filter{
+			Must: mustList,
+		},
+	}
+	filterJson, err := json.Marshal(filter)
+
+	fmt.Println(string(filterJson))
+
+	if err != nil {
+		log.Printf("Error encoding query: %s\n", err)
+		return err
+	}
+	req, err := http.NewRequest("POST", qdEndpoint, bytes.NewReader(filterJson))
+	if err != nil {
+		log.Printf("Error creating request: %s\n", err)
+		return err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Error sending request: %s\n", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(respBytes))
+
+	if resp.StatusCode != http.StatusOK {
+	    return errors.New(fmt.Sprintf("删除文件夹(%s)内容失败, 返回内容为: %s", dirname, string(respBytes)))
+	}
+	return nil
 }
 
 func (q *Qdrant) GetList() ([]*pb.CollectionDescription, error) {

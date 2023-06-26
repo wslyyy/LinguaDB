@@ -39,6 +39,7 @@ func main() {
 	r.POST("/insert", InsertHandler)
 	r.POST("/query", QueryHandler)
 	r.POST("/deleteDB", DeleteDBHandler)
+	r.POST("/deletePoints", DeletePointsHandler)
 
 	err := initialization.StartHTTPServer(*config, r)
 	if err != nil {
@@ -127,5 +128,30 @@ func DeleteDBHandler(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, gin.H{
 		"info": "删除目标库成功",
+	})
+}
+
+func DeletePointsHandler(context *gin.Context) {
+	var deletePoints model.DeletePoints
+	err := context.ShouldBindJSON(&deletePoints)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"err": err.Error(),
+		})
+		return
+	}
+	fmt.Printf("info: %#v\n", deletePoints)
+	dbName := deletePoints.DbName
+	dirName := deletePoints.DirName
+	err = lingua.DeletePoints(*config, dbName, dirName)
+	if err != nil {
+		log.Printf("删除失败：%v", err.Error())
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"err": err.Error(),
+		})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{
+		"info": "删除成功",
 	})
 }

@@ -1,5 +1,22 @@
 package model
 
+type Must struct {
+	Key string `json:"key"`
+	Match Match `json:"match"`
+}
+
+type Match struct {
+	Value string `json:"value"`
+}
+
+type Filter struct {
+	Must []Must `json:"must"`
+}
+
+type MyFilter struct {
+	Filter Filter `json:"filter"`
+}
+
 type QueryPayload struct {
 	TopK        int       `json:"top"`
 	Vector      []float32 `json:"vector"`
@@ -48,6 +65,11 @@ type Query struct {
 }
 
 type Insert struct {
+	DbName  string `json:"dbName" binding:"required"`
+	DirName string `json:"dirName" binding:"required"`
+}
+
+type DeletePoints struct {
 	DbName  string `json:"dbName" binding:"required"`
 	DirName string `json:"dirName" binding:"required"`
 }

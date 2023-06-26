@@ -43,6 +43,16 @@ qdrant/qdrant`
 }
 ```
 
+#### 删除文档库内指定文件夹
+[POST] http://127.0.0.1:8000/deletePoints
+
+```json
+{
+    "dbName":"xxx",
+    "dirName":"xxx"
+}
+```
+
 #### 删除文档库
 [POST] http://127.0.0.1:8000/deleteDB
 

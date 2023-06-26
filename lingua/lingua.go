@@ -10,6 +10,15 @@ import (
 	"log"
 )
 
+func DeletePoints(config initialization.Config, dbName string, dirName string) error {
+	qdrant := server.NewQdrant(config.QdrantAddrGrpc, config.QdrantAddrHttp, dbName, uint64(1536))
+	err := qdrant.DeletePoints(dirName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func Query(config initialization.Config, Q string, useCache bool, dbName string) (string, string, error) {
 	qdrant := server.NewQdrant(config.QdrantAddrGrpc, config.QdrantAddrHttp, dbName, uint64(1536))
 	clientToUse := initialization.NewOpenAIClient(config)
