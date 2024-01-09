@@ -73,7 +73,9 @@ func callEmbeddingAPIWithRetry(client *openai.Client, texts []string, embedModel
 	maxRetries int) (*openai.EmbeddingResponse, error) {
 	var err error
 	var res openai.EmbeddingResponse
-
+	log.Println("长度: ", len(texts))
+	log.Println("即将embeddings的内容是: ")
+	log.Println(texts)
 	for i := 0; i < maxRetries; i++ {
 		res, err = client.CreateEmbeddings(context.Background(), openai.EmbeddingRequest{
 			Input: texts,
