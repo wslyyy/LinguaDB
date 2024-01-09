@@ -130,7 +130,7 @@ func LoadDOC(config initialization.Config, dbName string, dirName string) error 
 		log.Println("[Chunks ERR]", errMsg)
 		return err
 	}
-	embeddings, err := server.GetEmbeddings(clientToUse, chunks, 2, openai.AdaEmbeddingV2)
+	embeddings, err := server.GetEmbeddings(clientToUse, chunks, 1, openai.AdaEmbeddingV2)
 	if err != nil {
 		errMsg := fmt.Sprintf("Error getting embeddings: %v", err)
 		log.Println("[Embeddings ERR]", errMsg)
